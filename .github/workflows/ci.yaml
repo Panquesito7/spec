@@ -1,0 +1,36 @@
+---
+name: "CI"
+
+on:
+  push:
+    branches: main
+  pull_request: {}
+
+jobs:
+  linkchecker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Link Checker
+        uses: lycheeverse/lychee-action@v1.10.0
+        with:
+          # Providing default parameters plus an exclude for Google Meet which produces a network error when checked
+          args: --verbose --no-progress './**/*.md' './**/*.html' --exclude https://meet.google.com
+          fail: true
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+  jsonschema:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+
+      - name: Check Schema
+        env:
+          GOPATH: /home/runner/work/go
+        run: make test
